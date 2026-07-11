@@ -20,7 +20,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body>
+<body class="loading">
+  <!-- オープニング（見た目は css/style.css の13、消すタイミングは js/site.js の0） -->
+  <div id="loader" aria-hidden="true">
+    <div class="loader-fish">
+      <svg viewBox="-36 -14 72 28" width="72" height="28" aria-hidden="true">
+        <path d="M30 0 C30 -8 18 -11 8 -10 C-2 -9 -11 -5 -16 -2 C-20 -7 -26 -10 -31 -11 C-27 -5 -27 5 -31 11 C-26 10 -20 7 -16 2 C-11 5 -2 9 8 10 C18 11 30 8 30 0 Z" fill="#fafafa" />
+      </svg>
+    </div>
+    <div class="loader-inner">
+      <p class="loader-logo">SEGU</p>
+      <div class="loader-line"></div>
+    </div>
+  </div>
+
   <!-- 魚が泳ぐ背景キャンバス（描画は js/fish-game.js） -->
   <canvas id="fish-canvas" aria-hidden="true"></canvas>
 
