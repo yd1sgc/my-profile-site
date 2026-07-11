@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>segu紹介サイト</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- 魚が泳ぐ背景キャンバス（描画は js/fish-game.js） -->
+  <canvas id="fish-canvas" aria-hidden="true"></canvas>
+
+  <!-- ナビゲーション（???はクリア後に現れる隠しリンク） -->
+  <nav>
+    <a href="#home" class="nav-logo">SEGU</a>
+    <div class="nav-links">
+      <a href="#home">HOME</a>
+      <a href="#about">ABOUT</a>
+      <a href="#works">WORKS</a>
+      <a href="#contact">CONTACT</a>
+      <a href="#secret" id="secret-link" class="secret" hidden>???</a>
+    </div>
+  </nav>
+
+  <!-- ヒーロー -->
+  <section id="home">
+    <p class="hero-label">PROFILE</p>
+    <h1>瀬口雄大</h1>
+    <div class="hero-divider"></div>
+    <p>麻雀が好きです。</p>
+  </section>
+
+  <section id="about" class="fade-in">
+    <h2 class="section-label">ABOUT</h2>
+    <p>じゃん豪２です。</p>
+  </section>
+
+  <section id="works" class="fade-in">
+    <h2 class="section-label">WORKS</h2>
+    <div class="buttons">
+      <a href="https://twitter.com/yourid" target="_blank" rel="noopener">TWITTER</a>
+      <a href="https://instagram.com/yourid" target="_blank" rel="noopener">INSTAGRAM</a>
+      <a href="https://github.com/yourid" target="_blank" rel="noopener">GITHUB</a>
+      <a href="https://github.com/yourid" target="_blank" rel="noopener">LINE</a>
+    </div>
+  </section>
+
+  <section id="contact" class="fade-in">
+    <h2 class="section-label">CONTACT</h2>
+    <p>メール: <a href="mailto:yd1sgc@gmail.com">yd1sgc@gmail.com</a></p>
+  </section>
+
+  <footer>
+    <p id="fish-counter">🐟 0 / 4</p>
+    <p>&copy; 2025 seguchi ydai</p>
+  </footer>
+
+  <!-- 隠しページ（魚を4匹そろえると開けるようになる） -->
+  <div id="secret-overlay" role="dialog" aria-modal="true" aria-label="隠しページ">
+    <button id="secret-close" aria-label="閉じる">&times;</button>
+    <div class="secret-inner">
+      <p class="secret-label">SECRET</p>
+      <h2>よくぞ見つけました</h2>
+      <div class="secret-divider"></div>
+      <p>ここは4匹の魚を導いた人だけが辿り着ける場所。<br />中身は近日公開予定です。</p>
+    </div>
+  </div>
+
+  <script src="js/site.js"></script>
+  <script src="js/fish-game.js"></script>
+</body>
+</html>

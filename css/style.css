@@ -1,0 +1,299 @@
+/* ==========================================================
+   style.css — サイト全体の見た目
+   構成:
+     1. 変数（色の定義はここを変えるだけで全体に反映）
+     2. 全体の基本設定
+     3. 魚のキャンバス（背景レイヤー）
+     4. ナビゲーション
+     5. ヒーロー（HOME）
+     6. セクション共通
+     7. WORKSのボタン
+     8. コンタクト
+     9. フッター
+    10. 隠しページ（オーバーレイ）
+    11. スクロールフェードイン
+    12. アクセシビリティ・スマホ対応
+   ========================================================== */
+
+/* ---------- 1. 変数 ---------- */
+:root {
+  --bg: #0e0e0e;          /* 背景の黒 */
+  --text: #fafafa;        /* メインの白 */
+  --text-muted: #999;     /* 補足テキストのグレー */
+  --line: #2a2a2a;        /* 罫線（暗め） */
+  --line-strong: #444;    /* 罫線（明るめ） */
+  --accent: #b9a7f2;      /* クリア時の紫（明） */
+  --accent-dim: #7f77dd;  /* クリア時の紫（暗） */
+}
+
+/* ---------- 2. 全体の基本設定 ---------- */
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: "Noto Sans JP", sans-serif;
+  font-weight: 300;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.9;
+}
+
+/* ---------- 3. 魚のキャンバス（背景レイヤー） ---------- */
+#fish-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none; /* 文字選択やクリックを邪魔しない */
+}
+section, footer { position: relative; z-index: 1; }
+
+/* ---------- 4. ナビゲーション ---------- */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 32px;
+  background: rgba(14, 14, 14, 0.9);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+  z-index: 10;
+}
+.nav-logo {
+  font-size: 13px;
+  letter-spacing: 4px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+}
+.nav-links {
+  display: flex;
+  gap: 28px;
+}
+.nav-links a {
+  position: relative;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 12px;
+  letter-spacing: 2px;
+  padding-bottom: 4px;
+  transition: color 0.3s, opacity 0.8s;
+}
+/* 下線がスッと伸びるアニメーション */
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--text);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s ease;
+}
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--text);
+}
+.nav-links a:hover::after,
+.nav-links a.active::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+.nav-links a.secret { color: var(--accent); }
+.nav-links a.secret::after { background: var(--accent); }
+
+/* ---------- 5. ヒーロー（HOME） ---------- */
+#home {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 80px 20px 40px;
+}
+.hero-label {
+  font-size: 12px;
+  letter-spacing: 6px;
+  color: var(--text-muted);
+  margin: 0 0 20px;
+}
+#home h1 {
+  font-size: clamp(32px, 7vw, 52px);
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em; /* letter-spacingの右余りを相殺して中央に */
+  margin: 0 0 28px;
+}
+.hero-divider {
+  width: 40px;
+  height: 1px;
+  background: var(--line-strong);
+  margin: 0 auto 28px;
+}
+#home p {
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+/* ---------- 6. セクション共通 ---------- */
+section:not(#home) {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 90px 24px;
+}
+.section-label {
+  font-size: 12px;
+  letter-spacing: 5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+  margin: 0 0 36px;
+  font-weight: 400;
+}
+section p {
+  letter-spacing: 1px;
+}
+
+/* ---------- 7. WORKSのボタン（白黒反転ホバー） ---------- */
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.buttons a {
+  display: inline-block;
+  padding: 12px 28px;
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-decoration: none;
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+.buttons a:hover {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+
+/* ---------- 8. コンタクト ---------- */
+#contact a {
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line-strong);
+  padding-bottom: 2px;
+  transition: border-color 0.3s;
+}
+#contact a:hover {
+  border-color: var(--text);
+}
+
+/* ---------- 9. フッター ---------- */
+footer {
+  text-align: center;
+  padding: 32px 20px;
+  border-top: 1px solid var(--line);
+  color: var(--text-muted);
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+footer p { margin: 4px 0; }
+#fish-counter {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: #555;
+  transition: color 1s;
+}
+#fish-counter.done { color: var(--accent); }
+
+/* ---------- 10. 隠しページ（オーバーレイ） ---------- */
+#secret-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: rgba(13, 10, 22, 0.97);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+#secret-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.secret-inner { padding: 24px; max-width: 560px; }
+.secret-label {
+  font-size: 12px;
+  letter-spacing: 6px;
+  color: var(--accent);
+  margin: 0 0 20px;
+}
+.secret-inner h2 {
+  font-size: clamp(24px, 5vw, 36px);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  margin: 0 0 28px;
+}
+.secret-divider {
+  width: 40px;
+  height: 1px;
+  background: var(--accent-dim);
+  margin: 0 auto 28px;
+}
+.secret-inner p {
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin: 0;
+}
+#secret-close {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+#secret-close:hover { color: var(--text); }
+
+/* ---------- 11. スクロールフェードイン ---------- */
+.fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- 12. アクセシビリティ・スマホ対応 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .fade-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+@media (max-width: 600px) {
+  nav { padding: 14px 16px; }
+  .nav-links { gap: 16px; }
+  .nav-links a { font-size: 11px; letter-spacing: 1px; }
+  section:not(#home) { padding: 60px 20px; }
+}
