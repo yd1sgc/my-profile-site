@@ -289,27 +289,28 @@
       ctx.fill();
     }
 
-    // 胴体：ふっくらした涙滴形
+    // 胴体：ふっくらした涙滴形（頭は円弧キャップとして輪郭に一体化、継ぎ目なし）
     const L = [], R = [];
     for (let i = 0; i < SEG; i++) {
       const w = BODY_W[i] * s * 0.8;
       L.push({ x: sp[i].x + Math.cos(angs[i] + Math.PI / 2) * w, y: sp[i].y + Math.sin(angs[i] + Math.PI / 2) * w });
       R.push({ x: sp[i].x + Math.cos(angs[i] - Math.PI / 2) * w, y: sp[i].y + Math.sin(angs[i] - Math.PI / 2) * w });
     }
-    const pts = [...L, sp[SEG - 1], ...R.slice().reverse()];
+    const hw = BODY_W[0] * s * 0.8;
     ctx.fillStyle = rgba(col, 1);
     ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    for (let i = 1; i < pts.length - 1; i++) {
-      ctx.quadraticCurveTo(pts[i].x, pts[i].y, (pts[i].x + pts[i + 1].x) / 2, (pts[i].y + pts[i + 1].y) / 2);
+    ctx.moveTo(R[0].x, R[0].y);
+    // 鼻先：中心を背骨の先端に合わせた半円。R[0]→L[0]と半径が一致するので継ぎ目ができない
+    ctx.arc(sp[0].x, sp[0].y, hw, angs[0] - Math.PI / 2, angs[0] + Math.PI / 2);
+    for (let i = 1; i < SEG; i++) {
+      ctx.quadraticCurveTo(L[i - 1].x, L[i - 1].y, (L[i - 1].x + L[i].x) / 2, (L[i - 1].y + L[i].y) / 2);
     }
+    ctx.quadraticCurveTo(L[SEG - 1].x, L[SEG - 1].y, sp[SEG - 1].x, sp[SEG - 1].y);
+    for (let i = SEG - 1; i >= 1; i--) {
+      ctx.quadraticCurveTo(R[i].x, R[i].y, (R[i].x + R[i - 1].x) / 2, (R[i].y + R[i - 1].y) / 2);
+    }
+    ctx.lineTo(R[0].x, R[0].y);
     ctx.closePath();
-    ctx.fill();
-
-    // 丸い頭（先端に円弧をかぶせる）
-    const hw = BODY_W[0] * s * 0.8;
-    ctx.beginPath();
-    ctx.arc(sp[0].x + Math.cos(angs[0]) * hw * 0.15, sp[0].y + Math.sin(angs[0]) * hw * 0.15, hw, 0, 6.29);
     ctx.fill();
   }
 
