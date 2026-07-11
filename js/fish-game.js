@@ -226,6 +226,14 @@
   // 体の幅の割合（頭側→尾側）。合計10個 = 背骨の節数
   const BODY_W = [0.6, 0.92, 1, 0.98, 0.92, 0.8, 0.62, 0.4, 0.23, 0.1];
 
+  // 形の調整用パラメータ（頻繁にいじる数値はここに集約）
+  const SHAPE = {
+    bodyScale:  0.8,  // BODY_W × s に掛ける全体スケール（体の太さ）
+    tailLength: 1.6,  // 尾びれの長さ（s倍）
+    tailWobble: 0.3,  // 尾びれの振れ幅（s倍）
+    finSeg:     2,    // 胸びれを付ける背骨の節番号
+  };
+
   function drawFish(f) {
     const s = f.s, sp = f.spine;
     const col = mixCol(f.mix);
@@ -242,8 +250,8 @@
     const tb = sp[SEG - 1];                          // 尾の付け根
     const pxT = Math.cos(aT + Math.PI / 2), pyT = Math.sin(aT + Math.PI / 2);
     const dxT = Math.cos(aT), dyT = Math.sin(aT);
-    const sw = Math.sin(f.wt + 2.5) * s * 0.3;       // 尾の振り
-    const fl = s * 1.6;                              // 尾びれの長さ
+    const sw = Math.sin(f.wt + 2.5) * s * SHAPE.tailWobble; // 尾の振り
+    const fl = s * SHAPE.tailLength;                        // 尾びれの長さ
     ctx.fillStyle = rgba(col, 1);
     ctx.beginPath();
     ctx.moveTo(tb.x, tb.y);
@@ -267,13 +275,14 @@
     ctx.fill();
 
     // 胸びれ：体側の小さなとがり
-    const a2 = angs[2];
+    const finSeg = SHAPE.finSeg;
+    const a2 = angs[finSeg];
     const flap = Math.sin(f.wt * 0.7 + f.s) * 0.15;
     ctx.fillStyle = rgba(col, 1);
     for (const sgn of [1, -1]) {
-      const bw = BODY_W[2] * s * 0.8;
-      const bx = sp[2].x + Math.cos(a2 + sgn * Math.PI / 2) * bw * 0.85;
-      const by = sp[2].y + Math.sin(a2 + sgn * Math.PI / 2) * bw * 0.85;
+      const bw = BODY_W[finSeg] * s * SHAPE.bodyScale;
+      const bx = sp[finSeg].x + Math.cos(a2 + sgn * Math.PI / 2) * bw * 0.85;
+      const by = sp[finSeg].y + Math.sin(a2 + sgn * Math.PI / 2) * bw * 0.85;
       const fa = a2 + sgn * (2.35 + flap);
       ctx.beginPath();
       ctx.moveTo(bx, by);
@@ -283,7 +292,7 @@
       );
       ctx.quadraticCurveTo(
         bx + Math.cos(a2 + Math.PI) * s * 0.6, by + Math.sin(a2 + Math.PI) * s * 0.6,
-        sp[3].x + Math.cos(a2 + sgn * Math.PI / 2) * bw * 0.55, sp[3].y + Math.sin(a2 + sgn * Math.PI / 2) * bw * 0.55
+        sp[finSeg + 1].x + Math.cos(a2 + sgn * Math.PI / 2) * bw * 0.55, sp[finSeg + 1].y + Math.sin(a2 + sgn * Math.PI / 2) * bw * 0.55
       );
       ctx.closePath();
       ctx.fill();
@@ -292,11 +301,11 @@
     // 胴体：ふっくらした涙滴形（頭は円弧キャップとして輪郭に一体化、継ぎ目なし）
     const L = [], R = [];
     for (let i = 0; i < SEG; i++) {
-      const w = BODY_W[i] * s * 0.8;
+      const w = BODY_W[i] * s * SHAPE.bodyScale;
       L.push({ x: sp[i].x + Math.cos(angs[i] + Math.PI / 2) * w, y: sp[i].y + Math.sin(angs[i] + Math.PI / 2) * w });
       R.push({ x: sp[i].x + Math.cos(angs[i] - Math.PI / 2) * w, y: sp[i].y + Math.sin(angs[i] - Math.PI / 2) * w });
     }
-    const hw = BODY_W[0] * s * 0.8;
+    const hw = BODY_W[0] * s * SHAPE.bodyScale;
     ctx.fillStyle = rgba(col, 1);
     ctx.beginPath();
     ctx.moveTo(R[0].x, R[0].y);
@@ -318,6 +327,14 @@
   const fx = [];  // 捕獲した瞬間に広がるリング
   let t = 0;      // フレームカウンタ
   let cleared = false, clearAt = 0;
+
+  // タブが非表示の間はループを止める（バッテリー・CPUの無駄遣いを防ぐ）
+  let visible = !document.hidden;
+  document.addEventListener("visibilitychange", () => {
+    const resuming = document.hidden === false && !visible;
+    visible = !document.hidden;
+    if (resuming) requestAnimationFrame(loop);
+  });
 
   function updateCounter() {
     const n = fishes.filter((f) => f.captured).length;
@@ -394,7 +411,7 @@
       }
     }
 
-    requestAnimationFrame(loop);
+    if (visible) requestAnimationFrame(loop);
   }
   loop();
 })();
