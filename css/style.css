@@ -219,15 +219,29 @@ section p {
   border-color: var(--text);
 }
 
-/* ---------- 8. コンタクト ---------- */
-#contact a {
-  color: var(--text);
-  text-decoration: none;
-  border-bottom: 1px solid var(--line-strong);
-  padding-bottom: 2px;
-  transition: border-color 0.3s;
+/* ---------- 8. コンタクト（丸いアイコンボタン、白黒反転ホバー） ---------- */
+.icon-links {
+  display: flex;
+  gap: 18px;
 }
-#contact a:hover {
+.icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  color: var(--text);
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+.icon-link svg {
+  width: 20px;
+  height: 20px;
+}
+.icon-link:hover {
+  background: var(--text);
+  color: var(--bg);
   border-color: var(--text);
 }
 
