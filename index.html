@@ -99,7 +99,7 @@
           <input type="text" id="comment-name" maxlength="30" placeholder="名前（省略可）" autocomplete="off" />
           <textarea id="comment-text" maxlength="300" placeholder="コメントを書く…" required></textarea>
           <!-- ボット除け（人には見えない。入力があれば投稿を無視する） -->
-          <input type="text" id="comment-website" name="website" class="honeypot" tabindex="-1" autocomplete="off" />
+          <input type="text" id="comment-website" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true" />
           <label class="comment-private-toggle">
             <input type="checkbox" id="comment-private" />
             非公開で送る（サイトには表示されず、自分だけが確認できます）
