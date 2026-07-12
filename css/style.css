@@ -342,11 +342,17 @@ footer p { margin: 4px 0; }
   }
 }
 
+/* スマホでだけ改行したい箇所に使う（空のspanをblock化して強制改行、PCでは非表示のまま） */
+.mobile-break {
+  display: none;
+}
+
 @media (max-width: 600px) {
   nav { padding: 14px 16px; }
   .nav-links { gap: 16px; }
   .nav-links a { font-size: 11px; letter-spacing: 1px; }
   section:not(#home) { padding: 60px 20px; }
+  .mobile-break { display: block; }
 }
 
 /* ---------- 13. オープニング（ローディング画面） ---------- */
