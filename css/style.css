@@ -218,6 +218,10 @@ section p {
   color: var(--bg);
   border-color: var(--text);
 }
+.buttons a.disabled {
+  cursor: default;
+  pointer-events: none;
+}
 
 /* ---------- 8. コンタクト（丸いアイコンボタン、白黒反転ホバー） ---------- */
 .icon-links {
