@@ -39,6 +39,10 @@ textInput.addEventListener("input", () => {
   countEl.textContent = `${textInput.value.length} / ${MAX_LEN}`;
 });
 
+// 初期化が終わったら { addDoc, serverTimestamp, commentsRef, privateRef } が入る。
+// 読み込み中・失敗時は null のままなので、投稿ハンドラ側で毎回チェックする。
+let fs = null;
+
 if (!isConfigured) {
   // Firebaseが未設定でもサイト自体は壊れないようにする
   listEl.innerHTML = '<p class="comment-empty">コメント機能は準備中です。</p>';
@@ -48,108 +52,120 @@ if (!isConfigured) {
 }
 
 async function init() {
-  const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js");
-  const {
-    getFirestore, collection, addDoc, serverTimestamp,
-    query, orderBy, limit, onSnapshot,
-  } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js");
+    const {
+      getFirestore, collection, addDoc, serverTimestamp,
+      query, orderBy, limit, onSnapshot,
+    } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const commentsRef = collection(db, "comments");
-  // 非公開メッセージの保存先。サイトからは絶対に読み込まない
-  // （下の「投稿フォームの処理」でのみ書き込みに使う）。
-  // Firebaseコンソール → Firestore Database → private-messages で確認する。
-  const privateRef = collection(db, "private-messages");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const commentsRef = collection(db, "comments");
+    // 非公開メッセージの保存先。サイトからは絶対に読み込まない
+    // （下の「投稿フォームの処理」でのみ書き込みに使う）。
+    // Firebaseコンソール → Firestore Database → private-messages で確認する。
+    const privateRef = collection(db, "private-messages");
+    fs = { addDoc, serverTimestamp, commentsRef, privateRef };
 
-  /* ---------- 3. コメント一覧の表示（リアルタイム更新） ---------- */
-  const recentQuery = query(commentsRef, orderBy("createdAt", "desc"), limit(50));
+    /* ---------- 3. コメント一覧の表示（リアルタイム更新） ---------- */
+    const recentQuery = query(commentsRef, orderBy("createdAt", "desc"), limit(50));
 
-  onSnapshot(recentQuery, (snapshot) => {
-    if (snapshot.empty) {
-      listEl.innerHTML = '<p class="comment-empty">まだコメントはありません。最初の1件をどうぞ。</p>';
-      return;
-    }
-    listEl.innerHTML = "";
-    snapshot.forEach((doc) => {
-      listEl.appendChild(renderComment(doc.data()));
-    });
-  }, () => {
-    listEl.innerHTML = '<p class="comment-empty">コメントを読み込めませんでした。</p>';
-  });
-
-  function renderComment(data) {
-    const item = document.createElement("div");
-    item.className = "comment-item";
-
-    const head = document.createElement("div");
-    head.className = "comment-item-head";
-
-    const name = document.createElement("span");
-    name.className = "comment-name";
-    name.textContent = data.name || "名無し";
-
-    const time = document.createElement("span");
-    time.className = "comment-time";
-    time.textContent = formatTime(data.createdAt);
-
-    head.append(name, time);
-
-    const text = document.createElement("p");
-    text.className = "comment-text";
-    text.textContent = data.text || "";
-
-    item.append(head, text);
-    return item;
-  }
-
-  function formatTime(ts) {
-    if (!ts) return "たった今"; // 送信直後、サーバー側の時刻がまだ付いていない
-    const d = ts.toDate();
-    const pad = (n) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-
-  /* ---------- 4. 投稿フォームの処理 ---------- */
-  let lastSubmitAt = 0;
-  const SUBMIT_COOLDOWN_MS = 8000; // 連投防止
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    if (websiteInput.value.trim() !== "") return; // ハニーポットに入力があればボット扱いで無視
-
-    const text = textInput.value.trim();
-    if (!text) return;
-
-    const now = Date.now();
-    if (now - lastSubmitAt < SUBMIT_COOLDOWN_MS) {
-      statusEl.textContent = "少し間を空けてから投稿してください。";
-      return;
-    }
-
-    const isPrivate = privateCheckbox.checked;
-    const targetRef = isPrivate ? privateRef : commentsRef;
-
-    submitBtn.disabled = true;
-    statusEl.textContent = "送信中…";
-
-    try {
-      await addDoc(targetRef, {
-        name: nameInput.value.trim().slice(0, 30),
-        text: text.slice(0, MAX_LEN),
-        createdAt: serverTimestamp(),
+    onSnapshot(recentQuery, (snapshot) => {
+      if (snapshot.empty) {
+        listEl.innerHTML = '<p class="comment-empty">まだコメントはありません。最初の1件をどうぞ。</p>';
+        return;
+      }
+      listEl.innerHTML = "";
+      snapshot.forEach((doc) => {
+        listEl.appendChild(renderComment(doc.data()));
       });
-      lastSubmitAt = now;
-      textInput.value = "";
-      countEl.textContent = `0 / ${MAX_LEN}`;
-      privateCheckbox.checked = false; // 次回はうっかり非公開のままにならないよう戻す
-      statusEl.textContent = isPrivate ? "非公開で送信しました。" : "投稿しました。";
-      setTimeout(() => { statusEl.textContent = ""; }, 3000);
-    } catch (err) {
-      statusEl.textContent = "送信に失敗しました。時間をおいて再度お試しください。";
-    } finally {
-      submitBtn.disabled = false;
-    }
-  });
+    }, () => {
+      listEl.innerHTML = '<p class="comment-empty">コメントを読み込めませんでした。</p>';
+    });
+  } catch (err) {
+    // CDN（gstatic.com）に届かない・回線不調などで読み込み自体が失敗したケース
+    listEl.innerHTML = '<p class="comment-empty">コメント機能を読み込めませんでした。通信環境をご確認のうえ再度お試しください。</p>';
+    submitBtn.disabled = true;
+  }
 }
+
+function renderComment(data) {
+  const item = document.createElement("div");
+  item.className = "comment-item";
+
+  const head = document.createElement("div");
+  head.className = "comment-item-head";
+
+  const name = document.createElement("span");
+  name.className = "comment-name";
+  name.textContent = data.name || "名無し";
+
+  const time = document.createElement("span");
+  time.className = "comment-time";
+  time.textContent = formatTime(data.createdAt);
+
+  head.append(name, time);
+
+  const text = document.createElement("p");
+  text.className = "comment-text";
+  text.textContent = data.text || "";
+
+  item.append(head, text);
+  return item;
+}
+
+function formatTime(ts) {
+  if (!ts) return "たった今"; // 送信直後、サーバー側の時刻がまだ付いていない
+  const d = ts.toDate();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/* ---------- 4. 投稿フォームの処理 ---------- */
+let lastSubmitAt = 0;
+const SUBMIT_COOLDOWN_MS = 8000; // 連投防止
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault(); // Firebaseの読み込み状態に関わらず、まずページの素の送信を止める
+
+  if (!fs) {
+    statusEl.textContent = "コメント機能が利用できません。時間をおいて再度お試しください。";
+    return;
+  }
+
+  if (websiteInput.value.trim() !== "") return; // ハニーポットに入力があればボット扱いで無視
+
+  const text = textInput.value.trim();
+  if (!text) return;
+
+  const now = Date.now();
+  if (now - lastSubmitAt < SUBMIT_COOLDOWN_MS) {
+    statusEl.textContent = "少し間を空けてから投稿してください。";
+    return;
+  }
+
+  const isPrivate = privateCheckbox.checked;
+  const targetRef = isPrivate ? fs.privateRef : fs.commentsRef;
+
+  submitBtn.disabled = true;
+  statusEl.textContent = "送信中…";
+
+  try {
+    await fs.addDoc(targetRef, {
+      name: nameInput.value.trim().slice(0, 30),
+      text: text.slice(0, MAX_LEN),
+      createdAt: fs.serverTimestamp(),
+    });
+    lastSubmitAt = now;
+    textInput.value = "";
+    countEl.textContent = `0 / ${MAX_LEN}`;
+    privateCheckbox.checked = false; // 次回はうっかり非公開のままにならないよう戻す
+    statusEl.textContent = isPrivate ? "非公開で送信しました。" : "投稿しました。";
+    setTimeout(() => { statusEl.textContent = ""; }, 3000);
+  } catch (err) {
+    statusEl.textContent = "送信に失敗しました。時間をおいて再度お試しください。";
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
