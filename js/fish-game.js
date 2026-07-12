@@ -59,6 +59,9 @@
     if (e.key === "Escape") overlay.classList.remove("open");
   });
 
+  // デバッグ用：コンソールで __openSecret() と打つと、ゲームを解かずに隠しページを開ける
+  window.__openSecret = () => overlay.classList.add("open");
+
   // クリアしたらナビに「???」リンクをふわっと出す
   function revealLink() {
     if (!secretLink.hidden) return;
