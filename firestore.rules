@@ -1,0 +1,52 @@
+// Firestoreのセキュリティルール
+//
+// このファイルは自動デプロイされません（Firebase CLIを使っていないため）。
+// Firebaseコンソール → Firestore Database → 「ルール」タブ に、
+// この内容をそのまま貼り付けて「公開」してください。
+//
+// やっていること:
+//   comments（公開コメント）:
+//     - 誰でも読める（コメント一覧の表示に必要）
+//     - 誰でも投稿できる（ログイン不要のため）が、以下を満たす場合のみ許可
+//         ・text は 1〜300文字の文字列
+//         ・name は 0〜30文字の文字列
+//         ・createdAt はサーバー側の時刻（なりすまし防止）
+//     - 投稿の書き換え・削除はクライアントから一切できない（false固定）
+//       → 荒らされた投稿を消すのは、開発者がFirebaseコンソールから手動で行う
+//
+//   private-messages（非公開メッセージ）:
+//     - 投稿の条件は comments と同じ
+//     - ただし read は false固定 → サイトからは絶対に表示されない
+//       （Firebaseコンソールの管理画面はルールの制約を受けないので、
+//         開発者だけは Firestore Database → private-messages で確認できる）
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /comments/{commentId} {
+      allow read: if true;
+
+      allow create: if request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 300
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() <= 30
+                    && request.resource.data.createdAt == request.time;
+
+      allow update, delete: if false;
+    }
+
+    match /private-messages/{messageId} {
+      allow read: if false;
+
+      allow create: if request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 300
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() <= 30
+                    && request.resource.data.createdAt == request.time;
+
+      allow update, delete: if false;
+    }
+  }
+}

@@ -89,11 +89,37 @@
       <p class="secret-label">SECRET</p>
       <h2>よくぞ見つけました</h2>
       <div class="secret-divider"></div>
-      <p>ここは4匹の魚を導いた人だけが辿り着ける場所。<br />中身は近日公開予定です。</p>
+      <p>ここは4匹の魚を導いた人だけが辿り着ける場所。<br />よければ一言残していってください。</p>
+
+      <!-- コメント欄（Firebase Firestoreを使用。設定は js/comments.js） -->
+      <div class="comments">
+        <p class="comments-label">COMMENTS</p>
+
+        <form id="comment-form" class="comment-form">
+          <input type="text" id="comment-name" maxlength="30" placeholder="名前（省略可）" autocomplete="off" />
+          <textarea id="comment-text" maxlength="300" placeholder="コメントを書く…" required></textarea>
+          <!-- ボット除け（人には見えない。入力があれば投稿を無視する） -->
+          <input type="text" id="comment-website" name="website" class="honeypot" tabindex="-1" autocomplete="off" />
+          <label class="comment-private-toggle">
+            <input type="checkbox" id="comment-private" />
+            非公開で送る（サイトには表示されず、自分だけが確認できます）
+          </label>
+          <div class="comment-form-row">
+            <span class="comment-count" id="comment-count">0 / 300</span>
+            <button type="submit" class="comment-submit" id="comment-submit">投稿する</button>
+          </div>
+          <p class="comment-status" id="comment-status"></p>
+        </form>
+
+        <div class="comment-list" id="comment-list">
+          <p class="comment-empty">コメントを読み込み中…</p>
+        </div>
+      </div>
     </div>
   </div>
 
   <script src="js/site.js"></script>
   <script src="js/fish-game.js"></script>
+  <script type="module" src="js/comments.js"></script>
 </body>
 </html>
