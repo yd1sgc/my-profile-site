@@ -333,10 +333,18 @@
 
   // タブが非表示の間はループを止める（バッテリー・CPUの無駄遣いを防ぐ）
   let visible = !document.hidden;
+  let rafId = null;
   document.addEventListener("visibilitychange", () => {
     const resuming = document.hidden === false && !visible;
     visible = !document.hidden;
-    if (resuming) requestAnimationFrame(loop);
+    if (!visible && rafId !== null) {
+      // 非表示になる直前に予約済みだったフレームを確実に止める。
+      // これをしないと、復帰時に新しく始めるループと二重に動いてしまい、
+      // 魚も波の演出も倍速になる。
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+    if (resuming) rafId = requestAnimationFrame(loop);
   });
 
   function updateCounter() {
@@ -414,7 +422,7 @@
       }
     }
 
-    if (visible) requestAnimationFrame(loop);
+    if (visible) rafId = requestAnimationFrame(loop);
   }
   loop();
 })();
